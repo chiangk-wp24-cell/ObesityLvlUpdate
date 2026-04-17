@@ -77,7 +77,8 @@ with tab2:
 
     # The Analysis Box
     st.subheader("📝 Key Findings & Analysis")
-    st.markdown('''1. Random Forest (top-left)
+    st.markdown("""
+1. Random Forest (top-left)
 
 Nearly perfect classification.
 Strong diagonal dominance (all predictions correct except a few in classes 5 and 6).
@@ -105,7 +106,8 @@ Clearly the weakest model here.
 Much more spread outside the diagonal:
 Class 1 is heavily confused (predicted as 0, 5, and 6).
 Class 5 and 6 also show higher misclassification rates.
-Indicates sensitivity to feature space overlap and possibly poor scaling or distance effects.''')
+Indicates sensitivity to feature space overlap and possibly poor scaling or distance effects.
+""")
 
 # --- TAB 3: SINGLE PREDICTION ---
 with tab3:
