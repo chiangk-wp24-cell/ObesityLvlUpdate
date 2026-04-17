@@ -77,7 +77,7 @@ with tab1:
     if not df.empty:
         st.subheader("📄 Training Dataset used")
         # Now 'df' is defined, so st.dataframe will work
-        st.dataframe(df, use_container_width=True, height=400)
+        st.dataframe(df, use_container_width=True, height=300)
     else:
         st.warning("No data available to display.")
 
