@@ -78,9 +78,9 @@ with tab1:
                 height=300)
         
     except FileNotFoundError:
-    st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
+                                st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
 
-    st.divider
+                                st.divider
     
     st.info("Below is a side-by-side comparison of all models after final tuning.")
     st.image("Accuraccy.png", caption="Model Accuracy Comparison chart")
