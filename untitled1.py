@@ -3,7 +3,37 @@ import pandas as pd
 import numpy as np
 import joblib  # Switched from pickle to joblib
 import plotly.io as pio
+import pickle
 
+@st.cache_resource
+def load_assets():
+    """
+    Loads assets from a mix of Pickle and Joblib formats.
+    """
+    # 1. Load Preprocessing (Pickle)
+    # Note: Pickle requires the 'rb' (read binary) mode
+    with open('scaler (2).pkl', 'rb') as f:
+        scaler = pickle.load(f)
+    with open('label_encoder (2).pkl', 'rb') as f:
+        le = pickle.load(f)
+    
+    # 2. Load Models (Joblib)
+    # Joblib handles the file opening for you automatically
+    models = {
+        "Random Forest": joblib.load('rf_model.joblib'),
+        "Decision Tree": joblib.load('dt_model.joblib'),
+        "Logistic Regression": joblib.load('lr_model.joblib'),
+        "KNN": joblib.load('knn_model.joblib')
+    }
+    
+    return models, scaler, le
+
+# Run the loader
+try:
+    models, scaler, le = load_assets()
+except Exception as e:
+    st.error(f"Error loading assets: {e}")
+    st.stop()
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Model Evaluation Dashboard", layout="wide")
 
@@ -14,6 +44,7 @@ with st.sidebar:
         "Choose Model for Live Prediction",
         ["Random Forest", "Decision Tree", "Logistic Regression", "KNN"]
     )
+    current_model = models[selected_model]
     st.info(f"Currently viewing results for: **{selected_model}**")
 
 # --- MAIN INTERFACE ---
@@ -114,80 +145,15 @@ Indicates sensitivity to feature space overlap and possibly poor scaling or dist
 
 # --- TAB 3: SINGLE PREDICTION ---
 with tab3:
-# --- 1. CONFIG & ASSET LOADING ---
-st.set_page_config(page_title="Obesity Analysis Dashboard", layout="wide")
-
-@st.cache_resource
-def load_assets():
-    # Loading the shared preprocessing assets
-    scaler = joblib.load('scaler (2).pkl')
-    le = joblib.load('label_encoder (2).pkl')
-    
-    # Loading the 4 different models
-    # Note: Ensure these filenames match your actual saved files
-    models = {
-        "Random Forest": joblib.load('rf_model.joblib'),
-        "Decision Tree": joblib.load('dt_model.joblib'),
-        "Logistic Regression": joblib.load('lr_model.joblib'),
-        "KNN": joblib.load('knn_model.joblib')
-    }
-    return models, scaler, le
-
-try:
-    models, scaler, le = load_assets()
-except Exception as e:
-    st.error(f"Error loading files: {e}. Ensure all .pkl files are in the repository.")
-    st.stop()
-
-# Exact column order from your training
-train_cols = [
-    'Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE', 'BMI',
-    'Gender_Male', 'family_history_with_overweight_yes', 'FAVC_yes',
-    'CAEC_Frequently', 'CAEC_Sometimes', 'CAEC_no', 'SMOKE_yes', 'SCC_yes',
-    'CALC_Frequently', 'CALC_Sometimes', 'CALC_no', 'MTRANS_Bike',
-    'MTRANS_Motorbike', 'MTRANS_Public_Transportation', 'MTRANS_Walking'
-]
-
-# --- 2. SIDEBAR SELECTION ---
-with st.sidebar:
-    st.title("Settings")
-    selected_model_name = st.selectbox("Select Model for Analysis", list(models.keys()))
-    current_model = models[selected_model_name]
-
-# --- 3. MAIN TABS ---
-st.title("Obesity Level Analysis Dashboard")
-tab1, tab2, tab3 = st.tabs(["📊 Comparisons", "📉 Confusion Matrices", "🔮 Live Prediction"])
-
-# --- TAB 1: COMPARISONS ---
-with tab1:
-    st.header("Model Performance Summary")
-    # Replace these numbers with your actual findings from your notebook
-    comparison_data = {
-        "Model": ["Random Forest", "Decision Tree", "Logistic Regression", "KNN"],
-        "Accuracy": [0.94, 0.88, 0.91, 0.85], 
-        "F1-Score": [0.92, 0.87, 0.89, 0.83]
-    }
-    st.table(pd.DataFrame(comparison_data))
-
-# --- TAB 2: CONFUSION MATRICES ---
-with tab2:
-    st.header("Confusion Matrix Comparison")
-    # Displaying the single comparison image you generated in Jupyter
-    try:
-        st.image("comparison.png", use_container_width=True)
-    except:
-        st.warning("comparison.png not found. Generate it in Jupyter first.")
-    
-    st.divider()
-    st.subheader("Analysis Notes")
-    st.text_area("Type your findings here:", height=150)
-
 # --- TAB 3: LIVE PREDICTION ---
 with tab3:
-    st.header(f"Predicting with: {selected_model_name}")
-    
-    with st.form("prediction_form"):
+    st.header(f"Predicting with: {selected_model}")
+    st.write("Enter your health and lifestyle details below.")
+
+    # We use a form to prevent the app from refreshing every time a slider moves
+    with st.form("obesity_prediction_form"):
         col1, col2 = st.columns(2)
+        
         with col1:
             gender = st.selectbox("Gender", ["Female", "Male"])
             age = st.number_input("Age", 1.0, 100.0, 25.0)
@@ -207,13 +173,16 @@ with tab3:
             tue = st.slider("Time using technology devices", 0.0, 2.0, 1.0)
             calc = st.selectbox("Alcohol consumption", ["Sometimes", "Frequently", "Always", "no"])
             mtrans = st.selectbox("Main transportation method", ["Public_Transportation", "Automobile", "Walking", "Motorbike", "Bike"])
-            
-        submit_btn = st.form_submit_button("Run Prediction")
 
+        # The form submit button
+        submit_btn = st.form_submit_button("Predict Weight Category")
+
+    # 4. Prediction Logic
     if submit_btn:
+        # Calculate BMI exactly like your old code
         bmi_val = weight / (height ** 2)
-        
-        # Build the exact dictionary for DataFrame
+
+        # Mapping inputs to the One-Hot-Encoded format the model expects
         input_dict = {
             'Age': age, 'Height': height, 'Weight': weight, 'FCVC': fcvc, 'NCP': ncp,
             'CH2O': ch2o, 'FAF': faf, 'TUE': tue, 'BMI': bmi_val,
@@ -234,15 +203,21 @@ with tab3:
             'MTRANS_Walking': 1 if mtrans == 'Walking' else 0
         }
 
-        # Transform and Predict
+        # Create DataFrame and ensure training order (using the global train_cols list)
         input_df = pd.DataFrame([input_dict])[train_cols]
+        
+        # Scale and Predict
         scaled_data = scaler.transform(input_df.values)
+        
+        # Use 'current_model' which is selected from the sidebar
         prediction = current_model.predict(scaled_data)
+        
+        # Turn the number back into a readable name (e.g., 0 -> "Normal_Weight")
         final_label = le.inverse_transform(prediction)
 
-        st.divider()
-        st.success(f"Result for **{selected_model_name}**: {final_label[0]}")
-        st.info(f"Calculated BMI: {bmi_val:.2f}")
+        st.markdown("---")
+        st.success(f"Predicted Category by **{selected_model}**: **{final_label[0]}**")
+        st.info(f"Calculated BMI: **{bmi_val:.2f}**")
 # --- TAB 4: BATCH PREDICTION ---
 with tab4:
     st.header("CSV Batch Processing")
