@@ -70,7 +70,7 @@ with tab1:
     st.subheader("Sample dataset used for current project")
     try:
             # Load the small CSV you just created
-            sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic')
+            sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
             # Display as an interactive table
             st.dataframe(
                 df, 
