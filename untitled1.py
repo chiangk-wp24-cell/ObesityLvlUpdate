@@ -35,7 +35,14 @@ except Exception as e:
     st.stop()
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Model Evaluation Dashboard", layout="wide")
-
+#define
+train_cols = [
+    'Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE', 'BMI',
+    'Gender_Male', 'family_history_with_overweight_yes', 'FAVC_yes',
+    'CAEC_Frequently', 'CAEC_Sometimes', 'CAEC_no', 'SMOKE_yes', 'SCC_yes',
+    'CALC_Frequently', 'CALC_Sometimes', 'CALC_no', 'MTRANS_Bike',
+    'MTRANS_Motorbike', 'MTRANS_Public_Transportation', 'MTRANS_Walking'
+]
 # --- SIDEBAR (Global Controls) ---
 with st.sidebar:
     st.title("Settings")
