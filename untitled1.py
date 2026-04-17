@@ -244,6 +244,52 @@ with tab3:
         st.info(f"Calculated BMI: **{bmi_val:.2f}**")
 # --- TAB 4: BATCH PREDICTION ---
 with tab4:
-    st.header("CSV Batch Processing")
-    st.write("Placeholder: File uploader and results table go here.")
-    uploaded_file = st.file_uploader("Upload your data", type="csv")
+    st.header("Bulk Analysis Tool")
+    st.write("Upload a CSV file with multiple records to get predictions for the entire group at once.")
+
+    # 1. File Uploader
+    uploaded_file = st.file_uploader("Upload your input CSV (must match training features)", type="csv")
+
+    if uploaded_file is not None:
+        try:
+            # 2. Read the new data
+            input_data = pd.read_csv(uploaded_file)
+            st.write("### 📋 Uploaded Data Preview", input_data.head())
+
+            # 3. Processing Button
+            if st.button(f"Run Batch Prediction with {selected_model}"):
+                # Ensure we only use the columns the model expects
+                # Note: This assumes the user's CSV is already preprocessed/encoded 
+                # or contains the raw columns ready for your mapping logic
+                
+                # Check for column alignment
+                missing_cols = set(train_cols) - set(input_data.columns)
+                if missing_cols:
+                    st.error(f"Missing columns in uploaded file: {missing_cols}")
+                else:
+                    # Scale the batch
+                    batch_scaled = scaler.transform(input_data[train_cols])
+                    
+                    # Predict
+                    batch_preds = current_model.predict(batch_scaled)
+                    final_labels = le.inverse_transform(batch_preds)
+                    
+                    # Attach results to the dataframe
+                    input_data['Predicted_Obesity_Level'] = final_labels
+                    
+                    st.divider()
+                    st.success("✅ Batch Prediction Complete!")
+                    st.dataframe(input_data, use_container_width=True)
+
+                    # 4. Download Result
+                    csv_result = input_data.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        label="📥 Download Predictions as CSV",
+                        data=csv_result,
+                        file_name="obesity_predictions.csv",
+                        mime="text/csv",
+                    )
+        except Exception as e:
+            st.error(f"Error processing file: {e}")
+    else:
+        st.info("Please upload a CSV file to begin. Make sure it contains columns like 'Age', 'Height', 'Weight', etc.")
