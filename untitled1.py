@@ -67,6 +67,23 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # --- TAB 1: COMPARISONS ---
 with tab1:
     st.header("Model Performance Summary")
+    st.subheader("Sample dataset used for current project")
+    try:
+        # Load the small CSV you just created
+        sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic')
+        
+        # Display as an interactive table
+       st.dataframe(
+            df, 
+            use_container_width=True, 
+            height=300  # Set a fixed height to force the scrollbar
+        )
+        
+    except FileNotFoundError:
+        st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
+
+    st.divider
+    
     st.info("Below is a side-by-side comparison of all models after final tuning.")
     st.image("Accuraccy.png", caption="Model Accuracy Comparison chart")
     st.image("precision.png", caption="Model precision comparison chart")
