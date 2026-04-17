@@ -70,16 +70,16 @@ with tab1:
     st.subheader("Sample dataset used for current project")
     try:
         # Load the small CSV you just created
-        sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic')
+    sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic')
         
         # Display as an interactive table
-       st.dataframe(
-            df, 
-            use_container_width=True, 
-            height=300)
+    st.dataframe(
+        df, 
+        use_container_width=True, 
+        height=300)
         
     except FileNotFoundError:
-        st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
+    st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
 
     st.divider
     
