@@ -81,7 +81,7 @@ with tab1:
     else:
         st.warning("No data available to display.")
 
-    st.divider
+   
     st.subheader("comparison charts")
     st.info("Below is a side-by-side comparison of all models after final tuning.")
     st.image("Accuraccy.png", caption="Model Accuracy Comparison chart")
