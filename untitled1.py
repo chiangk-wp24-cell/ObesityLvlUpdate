@@ -77,7 +77,7 @@ with tab2:
 
     # The Analysis Box
     st.subheader("📝 Key Findings & Analysis")
-    st.markdown("1. Random Forest (top-left)
+    st.markdown('''1. Random Forest (top-left)
 
 Nearly perfect classification.
 Strong diagonal dominance (all predictions correct except a few in classes 5 and 6).
