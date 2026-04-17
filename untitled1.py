@@ -1,5 +1,8 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
+import joblib  # Switched from pickle to joblib
+import plotly.io as pio
 
 # --- PAGE CONFIG ---
 st.set_page_config(page_title="Model Evaluation Dashboard", layout="wide")
@@ -111,11 +114,135 @@ Indicates sensitivity to feature space overlap and possibly poor scaling or dist
 
 # --- TAB 3: SINGLE PREDICTION ---
 with tab3:
-    st.header(f"Live Prediction: {selected_model}")
-    st.write("Placeholder: Manual input fields (sliders/number inputs) go here.")
-    if st.button("Predict Single"):
-        st.write("Prediction logic will trigger here.")
+# --- 1. CONFIG & ASSET LOADING ---
+st.set_page_config(page_title="Obesity Analysis Dashboard", layout="wide")
 
+@st.cache_resource
+def load_assets():
+    # Loading the shared preprocessing assets
+    scaler = joblib.load('scaler (2).pkl')
+    le = joblib.load('label_encoder (2).pkl')
+    
+    # Loading the 4 different models
+    # Note: Ensure these filenames match your actual saved files
+    models = {
+        "Random Forest": joblib.load('rf_model.joblib'),
+        "Decision Tree": joblib.load('dt_model.joblib'),
+        "Logistic Regression": joblib.load('lr_model.joblib'),
+        "KNN": joblib.load('knn_model.joblib')
+    }
+    return models, scaler, le
+
+try:
+    models, scaler, le = load_assets()
+except Exception as e:
+    st.error(f"Error loading files: {e}. Ensure all .pkl files are in the repository.")
+    st.stop()
+
+# Exact column order from your training
+train_cols = [
+    'Age', 'Height', 'Weight', 'FCVC', 'NCP', 'CH2O', 'FAF', 'TUE', 'BMI',
+    'Gender_Male', 'family_history_with_overweight_yes', 'FAVC_yes',
+    'CAEC_Frequently', 'CAEC_Sometimes', 'CAEC_no', 'SMOKE_yes', 'SCC_yes',
+    'CALC_Frequently', 'CALC_Sometimes', 'CALC_no', 'MTRANS_Bike',
+    'MTRANS_Motorbike', 'MTRANS_Public_Transportation', 'MTRANS_Walking'
+]
+
+# --- 2. SIDEBAR SELECTION ---
+with st.sidebar:
+    st.title("Settings")
+    selected_model_name = st.selectbox("Select Model for Analysis", list(models.keys()))
+    current_model = models[selected_model_name]
+
+# --- 3. MAIN TABS ---
+st.title("Obesity Level Analysis Dashboard")
+tab1, tab2, tab3 = st.tabs(["📊 Comparisons", "📉 Confusion Matrices", "🔮 Live Prediction"])
+
+# --- TAB 1: COMPARISONS ---
+with tab1:
+    st.header("Model Performance Summary")
+    # Replace these numbers with your actual findings from your notebook
+    comparison_data = {
+        "Model": ["Random Forest", "Decision Tree", "Logistic Regression", "KNN"],
+        "Accuracy": [0.94, 0.88, 0.91, 0.85], 
+        "F1-Score": [0.92, 0.87, 0.89, 0.83]
+    }
+    st.table(pd.DataFrame(comparison_data))
+
+# --- TAB 2: CONFUSION MATRICES ---
+with tab2:
+    st.header("Confusion Matrix Comparison")
+    # Displaying the single comparison image you generated in Jupyter
+    try:
+        st.image("comparison.png", use_container_width=True)
+    except:
+        st.warning("comparison.png not found. Generate it in Jupyter first.")
+    
+    st.divider()
+    st.subheader("Analysis Notes")
+    st.text_area("Type your findings here:", height=150)
+
+# --- TAB 3: LIVE PREDICTION ---
+with tab3:
+    st.header(f"Predicting with: {selected_model_name}")
+    
+    with st.form("prediction_form"):
+        col1, col2 = st.columns(2)
+        with col1:
+            gender = st.selectbox("Gender", ["Female", "Male"])
+            age = st.number_input("Age", 1.0, 100.0, 25.0)
+            height = st.number_input("Height (m)", 1.0, 2.5, 1.70)
+            weight = st.number_input("Weight (kg)", 30.0, 250.0, 70.0)
+            family_history = st.selectbox("Family history with overweight?", ["yes", "no"])
+            favc = st.selectbox("Frequent high caloric food?", ["yes", "no"])
+            fcvc = st.slider("Vegetable consumption frequency", 1.0, 3.0, 2.0)
+            ncp = st.slider("Number of main meals", 1.0, 4.0, 3.0)
+
+        with col2:
+            caec = st.selectbox("Food consumption between meals", ["Sometimes", "Frequently", "Always", "no"])
+            smoke = st.selectbox("Do you smoke?", ["yes", "no"])
+            ch2o = st.slider("Daily water intake (L)", 1.0, 3.0, 2.0)
+            scc = st.selectbox("Do you monitor calories?", ["yes", "no"])
+            faf = st.slider("Physical activity frequency", 0.0, 3.0, 1.0)
+            tue = st.slider("Time using technology devices", 0.0, 2.0, 1.0)
+            calc = st.selectbox("Alcohol consumption", ["Sometimes", "Frequently", "Always", "no"])
+            mtrans = st.selectbox("Main transportation method", ["Public_Transportation", "Automobile", "Walking", "Motorbike", "Bike"])
+            
+        submit_btn = st.form_submit_button("Run Prediction")
+
+    if submit_btn:
+        bmi_val = weight / (height ** 2)
+        
+        # Build the exact dictionary for DataFrame
+        input_dict = {
+            'Age': age, 'Height': height, 'Weight': weight, 'FCVC': fcvc, 'NCP': ncp,
+            'CH2O': ch2o, 'FAF': faf, 'TUE': tue, 'BMI': bmi_val,
+            'Gender_Male': 1 if gender == 'Male' else 0,
+            'family_history_with_overweight_yes': 1 if family_history == 'yes' else 0,
+            'FAVC_yes': 1 if favc == 'yes' else 0,
+            'CAEC_Frequently': 1 if caec == 'Frequently' else 0,
+            'CAEC_Sometimes': 1 if caec == 'Sometimes' else 0,
+            'CAEC_no': 1 if caec == 'no' else 0,
+            'SMOKE_yes': 1 if smoke == 'yes' else 0,
+            'SCC_yes': 1 if scc == 'yes' else 0,
+            'CALC_Frequently': 1 if calc == 'Frequently' else 0,
+            'CALC_Sometimes': 1 if calc == 'Sometimes' else 0,
+            'CALC_no': 1 if calc == 'no' else 0,
+            'MTRANS_Bike': 1 if mtrans == 'Bike' else 0,
+            'MTRANS_Motorbike': 1 if mtrans == 'Motorbike' else 0,
+            'MTRANS_Public_Transportation': 1 if mtrans == 'Public_Transportation' else 0,
+            'MTRANS_Walking': 1 if mtrans == 'Walking' else 0
+        }
+
+        # Transform and Predict
+        input_df = pd.DataFrame([input_dict])[train_cols]
+        scaled_data = scaler.transform(input_df.values)
+        prediction = current_model.predict(scaled_data)
+        final_label = le.inverse_transform(prediction)
+
+        st.divider()
+        st.success(f"Result for **{selected_model_name}**: {final_label[0]}")
+        st.info(f"Calculated BMI: {bmi_val:.2f}")
 # --- TAB 4: BATCH PREDICTION ---
 with tab4:
     st.header("CSV Batch Processing")
