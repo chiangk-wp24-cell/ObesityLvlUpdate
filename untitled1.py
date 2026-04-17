@@ -66,9 +66,46 @@ with tab1:
 
 # --- TAB 2: CONFUSION MATRICES ---
 with tab2:
-    st.header("Confusion Matrix Gallery")
-    st.write("Placeholder: Your saved .png files will be displayed here.")
-    # Tip: Use st.columns(2) later to show 4 images in a 2x2 grid
+    st.header("Confusion Matrix Comparison")
+    st.write("Visualizing the performance across all models in one view.")
+
+    # Display the saved image
+    # use_container_width=True is important so the 2x2 grid is readable
+    st.image("matrix.png", caption="Model Comparison Matrix", use_container_width=True)
+
+    st.divider()
+
+    # The Analysis Box
+    st.subheader("📝 Key Findings & Analysis")
+    st.markdown("1. Random Forest (top-left)
+
+Nearly perfect classification.
+Strong diagonal dominance (all predictions correct except a few in classes 5 and 6).
+Very minimal confusion → best overall performer.
+
+2. Decision Tree (top-right)
+
+Also very strong, but slightly more errors than Random Forest.
+Some confusion:
+Class 3 → misclassified as class 2 (2 cases).
+Class 5 and 6 show small spillover errors.
+Still highly accurate, but less robust than Random Forest.
+
+3. Logistic Regression (bottom-left)
+
+Performance is close to Decision Tree.
+Small but noticeable misclassifications:
+Class 1 → confused with class 0.
+Class 5 and 6 → minor mix-ups.
+Suggests linear decision boundaries work fairly well but not perfectly.
+
+4. KNN (bottom-right)
+
+Clearly the weakest model here.
+Much more spread outside the diagonal:
+Class 1 is heavily confused (predicted as 0, 5, and 6).
+Class 5 and 6 also show higher misclassification rates.
+Indicates sensitivity to feature space overlap and possibly poor scaling or distance effects.''')
 
 # --- TAB 3: SINGLE PREDICTION ---
 with tab3:
