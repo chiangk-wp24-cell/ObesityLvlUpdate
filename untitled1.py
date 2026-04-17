@@ -68,7 +68,11 @@ tab1, tab2, tab3, tab4 = st.tabs([
 with tab1:
     st.header("Model Performance Summary")
     st.info("Below is a side-by-side comparison of all models after final tuning.")
-
+    st.image("Accuraccy.png", caption="Model Accuracy Comparison chart")
+    st.image("precision.png", caption="Model precision comparison chart")
+    st.image("Recall.png", caption="Model Recall Comparison chart")
+    st.image("F1-score.png", caption="Model F1-score Comparison chart")
+    
     # KEY STEP: Manually enter your final metrics here
     comparison_data = {
         "Model": ["Random Forest", "Decision Tree", "Logistic Regression", "KNN"],
