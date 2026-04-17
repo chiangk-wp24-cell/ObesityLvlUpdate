@@ -143,8 +143,6 @@ Class 5 and 6 also show higher misclassification rates.
 Indicates sensitivity to feature space overlap and possibly poor scaling or distance effects.
 """)
 
-# --- TAB 3: SINGLE PREDICTION ---
-with tab3:
 # --- TAB 3: LIVE PREDICTION ---
 with tab3:
     st.header(f"Predicting with: {selected_model}")
