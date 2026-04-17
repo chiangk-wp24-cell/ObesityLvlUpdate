@@ -45,13 +45,11 @@ train_cols = [
 ]  
 
 try:
-    # Load the small CSV you just created
-    sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
-    # Display as an interactive table
-        
-        
+    #load sample data
+    df = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
 except FileNotFoundError:
-    st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
+    st.error("CSV file not found. Please check your filename!")
+    df = pd.DataFrame()
 # --- SIDEBAR (Global Controls) ---
 with st.sidebar:
     st.title("Settings")
@@ -76,11 +74,12 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # --- TAB 1: COMPARISONS ---
 with tab1:
     st.header("Model Performance Summary")
-    st.subheader("Sample dataset used for current project")
-    st.dataframe(
-                df, 
-                use_container_width=True, 
-                height=300)
+    if not df.empty:
+        st.subheader("📄 Training Dataset used")
+        # Now 'df' is defined, so st.dataframe will work
+        st.dataframe(df, use_container_width=True, height=400)
+    else:
+        st.warning("No data available to display.")
 
     st.divider
     st.subheader("comparison charts")
