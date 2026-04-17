@@ -44,14 +44,14 @@ train_cols = [
     'MTRANS_Motorbike', 'MTRANS_Public_Transportation', 'MTRANS_Walking'
 ]  
 
-    try:
-            # Load the small CSV you just created
-            sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
-            # Display as an interactive table
+try:
+    # Load the small CSV you just created
+    sample_data = pd.read_csv('ObesityDataSet_raw_and_data_sinthetic.csv')
+    # Display as an interactive table
         
         
-    except FileNotFoundError:
-                                st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
+except FileNotFoundError:
+    st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
 # --- SIDEBAR (Global Controls) ---
 with st.sidebar:
     st.title("Settings")
