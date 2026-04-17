@@ -76,8 +76,7 @@ with tab1:
        st.dataframe(
             df, 
             use_container_width=True, 
-            height=300  # Set a fixed height to force the scrollbar
-        )
+            height=300)
         
     except FileNotFoundError:
         st.warning("ObesityDataSet_raw_and_data_sinthetic not found. Please upload it to your repository.")
